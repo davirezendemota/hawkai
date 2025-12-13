@@ -1,6 +1,7 @@
 'use client';
 
 import { DemandGroup } from '../types/demand';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface DemandGroupsProps {
   groups: DemandGroup[];
@@ -24,23 +25,25 @@ export default function DemandGroups({
         </p>
       ) : (
         groups.map((group) => (
-          <div
+          <Card
             key={group.id}
-            className="flex items-center gap-3 p-4 bg-white rounded-lg border border-[var(--border)] hover:shadow-md transition-shadow cursor-pointer"
+            className="flex items-center gap-3 p-4 hover:shadow-md transition-shadow cursor-pointer"
             onClick={() => onGroupClick?.(group)}
           >
-            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
-              <span className="text-xs font-semibold text-[var(--text-primary)]">
-                {group.name.charAt(0).toUpperCase()}
-              </span>
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-[var(--text-primary)]">{group.name}</p>
-              <p className="text-xs text-[var(--text-secondary)]">
-                {group.demands.length} demanda{group.demands.length !== 1 ? 's' : ''}
-              </p>
-            </div>
-          </div>
+            <CardContent className="flex items-center gap-3 p-0 w-full">
+              <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                <span className="text-xs font-semibold text-[var(--text-primary)]">
+                  {group.name.charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-[var(--text-primary)]">{group.name}</p>
+                <p className="text-xs text-[var(--text-secondary)]">
+                  {group.demands.length} demanda{group.demands.length !== 1 ? 's' : ''}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         ))
       )}
     </div>

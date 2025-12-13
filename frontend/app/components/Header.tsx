@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { Button } from '@/components/ui/button';
 
 export default function Header() {
   return (
@@ -16,12 +17,12 @@ export default function Header() {
         <h1 className="text-xl font-bold text-[var(--text-primary)]">HawkAI</h1>
       </div>
       <div className="flex items-center gap-4">
-        <button className="px-4 py-2 rounded-full bg-gray-100 text-[var(--text-primary)] hover:bg-gray-200 transition-colors text-sm font-medium">
+        <Button variant="ghost" className="rounded-full">
           Profile
-        </button>
-        <button className="w-10 h-10 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors flex items-center justify-center">
+        </Button>
+        <Button variant="ghost" size="icon" className="rounded-full">
           <span className="text-sm font-semibold text-[var(--text-primary)]">U</span>
-        </button>
+        </Button>
       </div>
     </header>
   );

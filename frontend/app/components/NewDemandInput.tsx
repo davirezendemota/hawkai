@@ -2,6 +2,15 @@
 
 import { useState, FormEvent } from 'react';
 import { DemandPriority } from '../types/demand';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface NewDemandInputProps {
   onDemandCreate: (data: {
@@ -56,50 +65,53 @@ export default function NewDemandInput({ onDemandCreate }: NewDemandInputProps) 
       <form onSubmit={handleSubmit} className="space-y-3">
         <div className="flex gap-3">
           {/* Input de título */}
-          <input
+          <Input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Digite uma nova demanda"
-            className="flex-1 px-4 py-3 rounded-lg border border-[var(--border)] bg-white text-[var(--text-primary)] placeholder:text-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent transition-all"
+            className="flex-1"
             required
           />
 
           {/* Select de prioridade */}
-          <select
+          <Select
             value={priority}
-            onChange={(e) => setPriority(e.target.value as DemandPriority)}
-            className="px-4 py-3 rounded-lg border border-[var(--border)] bg-white text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent transition-all"
+            onValueChange={(value) => setPriority(value as DemandPriority)}
           >
-            <option value="low">Baixa</option>
-            <option value="medium">Média</option>
-            <option value="high">Alta</option>
-            <option value="urgent">Urgente</option>
-          </select>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="Prioridade" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="low">Baixa</SelectItem>
+              <SelectItem value="medium">Média</SelectItem>
+              <SelectItem value="high">Alta</SelectItem>
+              <SelectItem value="urgent">Urgente</SelectItem>
+            </SelectContent>
+          </Select>
 
           {/* Select de horas */}
-          <select
-            value={storyPoints}
-            onChange={(e) => setStoryPoints(e.target.value)}
-            className="px-4 py-3 rounded-lg border border-[var(--border)] bg-white text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent transition-all"
-            title="Horas estimadas"
+          <Select
+            value={storyPoints || undefined}
+            onValueChange={(value) => setStoryPoints(value)}
           >
-            <option value="">Horas</option>
-            {HOURS_OPTIONS.map((hours) => (
-              <option key={hours} value={hours.toString()}>
-                {formatHours(hours)}
-              </option>
-            ))}
-            <option value="?">? (incerto)</option>
-          </select>
+            <SelectTrigger className="w-[140px]" title="Horas estimadas">
+              <SelectValue placeholder="Horas" />
+            </SelectTrigger>
+            <SelectContent>
+              {HOURS_OPTIONS.map((hours) => (
+                <SelectItem key={hours} value={hours.toString()}>
+                  {formatHours(hours)}
+                </SelectItem>
+              ))}
+              <SelectItem value="?">? (incerto)</SelectItem>
+            </SelectContent>
+          </Select>
 
           {/* Botão de submit */}
-          <button
-            type="submit"
-            className="px-6 py-3 rounded-lg bg-[var(--accent)] text-white font-medium hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 transition-all"
-          >
+          <Button type="submit">
             Criar
-          </button>
+          </Button>
         </div>
       </form>
     </div>

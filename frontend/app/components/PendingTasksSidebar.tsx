@@ -1,6 +1,15 @@
 'use client';
 
 import { Demand, DemandPriority } from '../types/demand';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface PendingTasksSidebarProps {
   tasks: Demand[];
@@ -24,6 +33,10 @@ const formatHours = (hours: number): string => {
 const getImpactColor = (rank: number | undefined, impactPercentage: number | undefined) => {
   if (!impactPercentage || impactPercentage === 0) {
     return 'bg-white'; // Sem impacto definido
+  }
+  
+  if (rank === undefined) {
+    return 'bg-[#4a9e47]'; // Verde normal se rank não definido
   }
   
   if (rank === 0) {
@@ -86,87 +99,99 @@ export default function PendingTasksSidebar({
               : 'text-[var(--text-primary)]';
             
             return (
-            <div
+            <Card
               key={task.id}
-              className={`p-3 rounded-lg border border-[var(--border)] ${bgColor} hover:opacity-90 transition-all ${textColor}`}
+              className={`p-3 ${bgColor} hover:opacity-90 transition-all ${textColor} border-[var(--border)]`}
             >
-              <p
-                className={`text-sm ${textColor} mb-2 cursor-pointer`}
-                onClick={() => onTaskClick?.(task)}
-              >
-                {task.title}
-              </p>
-              <div className="flex gap-1.5">
-                {/* Select de Prioridade */}
-                <select
-                  value={task.priority}
-                  onChange={(e) => {
-                    onDemandUpdate?.(task.id, {
-                      priority: e.target.value as DemandPriority,
-                    });
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                  className={`flex-1 px-2 py-1.5 text-xs rounded border border-[var(--border)] ${
-                    task.impactPercentage && task.impactPercentage > 0
-                      ? 'bg-white/90 text-[var(--text-primary)]'
-                      : 'bg-white text-[var(--text-primary)]'
-                  } focus:outline-none focus:ring-1 focus:ring-[var(--accent)] focus:border-transparent transition-all`}
+              <CardContent className="p-0">
+                <p
+                  className={`text-sm ${textColor} mb-2 cursor-pointer`}
+                  onClick={() => onTaskClick?.(task)}
                 >
-                  <option value="low">Baixa</option>
-                  <option value="medium">Média</option>
-                  <option value="high">Alta</option>
-                  <option value="urgent">Urgente</option>
-                </select>
+                  {task.title}
+                </p>
+                <div className="flex gap-1.5">
+                  {/* Select de Prioridade */}
+                  <Select
+                    value={task.priority}
+                    onValueChange={(value) => {
+                      onDemandUpdate?.(task.id, {
+                        priority: value as DemandPriority,
+                      });
+                    }}
+                  >
+                    <SelectTrigger
+                      className={`flex-1 h-8 text-xs ${
+                        task.impactPercentage && task.impactPercentage > 0
+                          ? 'bg-white/90 text-[var(--text-primary)]'
+                          : 'bg-white text-[var(--text-primary)]'
+                      }`}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Baixa</SelectItem>
+                      <SelectItem value="medium">Média</SelectItem>
+                      <SelectItem value="high">Alta</SelectItem>
+                      <SelectItem value="urgent">Urgente</SelectItem>
+                    </SelectContent>
+                  </Select>
 
-                {/* Select de Horas */}
-                <select
-                  value={task.storyPoints?.toString() || ''}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    onDemandUpdate?.(task.id, {
-                      storyPoints:
-                        value && value !== '?' ? parseFloat(value) : undefined,
-                    });
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                  className={`flex-1 px-2 py-1.5 text-xs rounded border border-[var(--border)] ${
-                    task.impactPercentage && task.impactPercentage > 0
-                      ? 'bg-white/90 text-[var(--text-primary)]'
-                      : 'bg-white text-[var(--text-primary)]'
-                  } focus:outline-none focus:ring-1 focus:ring-[var(--accent)] focus:border-transparent transition-all`}
-                >
-                  <option value="">Horas</option>
-                  {HOURS_OPTIONS.map((hours) => (
-                    <option key={hours} value={hours.toString()}>
-                      {formatHours(hours)}
-                    </option>
-                  ))}
-                  <option value="?">?</option>
-                </select>
+                  {/* Select de Horas */}
+                  <Select
+                    value={task.storyPoints?.toString() || undefined}
+                    onValueChange={(value) => {
+                      onDemandUpdate?.(task.id, {
+                        storyPoints:
+                          value && value !== '?' ? parseFloat(value) : undefined,
+                      });
+                    }}
+                  >
+                    <SelectTrigger
+                      className={`flex-1 h-8 text-xs ${
+                        task.impactPercentage && task.impactPercentage > 0
+                          ? 'bg-white/90 text-[var(--text-primary)]'
+                          : 'bg-white text-[var(--text-primary)]'
+                      }`}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <SelectValue placeholder="Horas" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {HOURS_OPTIONS.map((hours) => (
+                        <SelectItem key={hours} value={hours.toString()}>
+                          {formatHours(hours)}
+                        </SelectItem>
+                      ))}
+                      <SelectItem value="?">?</SelectItem>
+                    </SelectContent>
+                  </Select>
 
-                {/* Input de Impacto */}
-                <input
-                  type="number"
-                  value={task.impactPercentage?.toString() || ''}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    onDemandUpdate?.(task.id, {
-                      impactPercentage: value ? parseFloat(value) : undefined,
-                    });
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                  placeholder="Impacto %"
-                  min="0"
-                  max="100"
-                  step="0.1"
-                  className={`flex-1 px-2 py-1.5 text-xs rounded border border-[var(--border)] ${
-                    task.impactPercentage && task.impactPercentage > 0
-                      ? 'bg-white/90 text-[var(--text-primary)]'
-                      : 'bg-white text-[var(--text-primary)]'
-                  } placeholder:text-[var(--text-secondary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] focus:border-transparent transition-all`}
-                />
-              </div>
-            </div>
+                  {/* Input de Impacto */}
+                  <Input
+                    type="number"
+                    value={task.impactPercentage?.toString() || ''}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      onDemandUpdate?.(task.id, {
+                        impactPercentage: value ? parseFloat(value) : undefined,
+                      });
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                    placeholder="Impacto %"
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    className={`flex-1 h-8 text-xs ${
+                      task.impactPercentage && task.impactPercentage > 0
+                        ? 'bg-white/90 text-[var(--text-primary)]'
+                        : 'bg-white text-[var(--text-primary)]'
+                    }`}
+                  />
+                </div>
+              </CardContent>
+            </Card>
             );
           })
         )}

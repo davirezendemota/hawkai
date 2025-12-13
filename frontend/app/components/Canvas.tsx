@@ -3,6 +3,7 @@
 import { useMemo, useState, useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import { Demand } from '../types/demand';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface CanvasProps {
   demands: Demand[];
@@ -177,11 +178,13 @@ export default function Canvas({ demands, onDemandClick }: CanvasProps) {
   }, [bubbleData, dimensions, onDemandClick]);
 
   return (
-    <div className="bg-gray-50 rounded-lg border border-[var(--border)] p-6 h-[300px] mb-4 flex flex-col max-w-2xl">
-      <h3 className="text-sm font-semibold text-[var(--text-secondary)] mb-4 uppercase tracking-wide">
-        Canvas
-      </h3>
-      <div className="flex-1 overflow-hidden">
+    <Card className="h-[300px] mb-4 flex flex-col max-w-2xl">
+      <CardHeader className="pb-4">
+        <CardTitle className="text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wide">
+          Canvas
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="flex-1 overflow-hidden">
         {activeDemands.length === 0 ? (
           <p className="text-sm text-[var(--text-secondary)] text-center py-12">
             Nenhuma demanda no canvas
@@ -199,7 +202,7 @@ export default function Canvas({ demands, onDemandClick }: CanvasProps) {
             viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
           />
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
