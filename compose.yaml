@@ -1,0 +1,18 @@
+services:
+  frontend:
+    platform: linux/amd64
+    container_name: hawkai_frontend_local
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: deps
+    restart: unless-stopped
+    ports:
+      - "10000:3000"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./frontend:/app
+      - /app/.next
+    command: sh -c "npm install && npm run dev"
+
