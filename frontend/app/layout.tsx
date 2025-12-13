@@ -4,6 +4,10 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "HawkAI - Gerenciamento de Demandas Diárias",
   description: "Sistema de gerenciamento de demandas e tarefas para planejamento e execução diária",
+  icons: {
+    icon: '/hawkai_logo.png',
+    apple: '/hawkai_logo.png',
+  },
 };
 
 export default function RootLayout({
