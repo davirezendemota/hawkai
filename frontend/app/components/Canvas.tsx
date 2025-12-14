@@ -61,18 +61,27 @@ export default function Canvas({ demands, onDemandClick }: CanvasProps) {
       (a, b) => (b.impactPercentage || 0) - (a.impactPercentage || 0)
     );
 
+    // Verificar se todas as demandas têm o mesmo percentual de impacto
+    const firstImpact = sortedDemands[0]?.impactPercentage || 0;
+    const allSameImpact = sortedDemands.every(
+      (d) => Math.abs((d.impactPercentage || 0) - firstImpact) < 0.01
+    );
+
     // Calcular raios proporcionais
     const maxImpact = Math.max(...sortedDemands.map(d => d.impactPercentage || 0));
-    const minRadius = 20;
-    const maxRadius = Math.min(dimensions.width, dimensions.height) * 0.15;
+    const minRadius = 30;
+    const maxRadius = Math.min(dimensions.width, dimensions.height) * 0.25;
     
     return sortedDemands.map((demand, index) => {
       const impact = demand.impactPercentage || 0;
       const radius = Math.max((impact / maxImpact) * maxRadius, minRadius);
       
       // Determinar cor baseada no rank (apenas primeira e segunda demanda)
+      // Se todas tiverem o mesmo impacto, usar cor padrão para todas
       let color: string;
-      if (index === 0) {
+      if (allSameImpact) {
+        color = '#e5e7eb'; // Todas cinza quando têm o mesmo impacto
+      } else if (index === 0) {
         color = '#1A8917'; // Primeira demanda: verde mais intenso
       } else if (index === 1) {
         color = '#2d5a2b'; // Segunda demanda: verde mais escuro
@@ -132,19 +141,30 @@ export default function Canvas({ demands, onDemandClick }: CanvasProps) {
         }
       });
 
+    // Verificar se todas as demandas têm o mesmo impacto
+    const allSameImpact = bubbleData.length > 0 && 
+      bubbleData.every((d) => Math.abs(d.value - bubbleData[0].value) < 0.01);
+
     // Adicionar círculos
     bubbles
       .append('circle')
       .attr('r', (d) => d.radius)
       .attr('fill', (d) => d.color)
-      .attr('stroke', (d) => (d.impactRank === 0 || d.impactRank === 1) ? 'white' : '#d1d5db')
+      .attr('stroke', (d) => {
+        if (allSameImpact) return '#d1d5db';
+        return (d.impactRank === 0 || d.impactRank === 1) ? 'white' : '#d1d5db';
+      })
       .attr('stroke-width', 2)
-      .style('opacity', (d) => (d.impactRank === 0 ? 0.8 : 0.6))
+      .style('opacity', (d) => {
+        if (allSameImpact) return 0.6;
+        return d.impactRank === 0 ? 0.8 : 0.6;
+      })
       .on('mouseenter', function() {
         d3.select(this).style('opacity', 1);
       })
       .on('mouseleave', function(_, d) {
-        d3.select(this).style('opacity', d.impactRank === 0 ? 0.8 : 0.6);
+        const baseOpacity = allSameImpact ? 0.6 : (d.impactRank === 0 ? 0.8 : 0.6);
+        d3.select(this).style('opacity', baseOpacity);
       });
 
     // Adicionar texto com porcentagem
@@ -152,9 +172,18 @@ export default function Canvas({ demands, onDemandClick }: CanvasProps) {
       .append('text')
       .attr('text-anchor', 'middle')
       .attr('dominant-baseline', 'middle')
-      .attr('fill', (d) => (d.impactRank === 0 || d.impactRank === 1) ? 'white' : '#374151')
-      .attr('font-size', (d) => (d.impactRank === 0 ? '14' : '10'))
-      .attr('font-weight', (d) => (d.impactRank === 0 ? 'bold' : 'normal'))
+      .attr('fill', (d) => {
+        if (allSameImpact) return '#374151';
+        return (d.impactRank === 0 || d.impactRank === 1) ? 'white' : '#374151';
+      })
+      .attr('font-size', (d) => {
+        if (allSameImpact) return '10';
+        return d.impactRank === 0 ? '14' : '10';
+      })
+      .attr('font-weight', (d) => {
+        if (allSameImpact) return 'normal';
+        return d.impactRank === 0 ? 'bold' : 'normal';
+      })
       .style('pointer-events', 'none')
       .style('user-select', 'none')
       .text((d) => `${Math.round(d.value)}%`);
