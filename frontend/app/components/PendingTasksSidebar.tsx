@@ -1,7 +1,6 @@
 'use client';
 
 import { Demand, DemandPriority } from '../types/demand';
-import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -15,6 +14,7 @@ interface PendingTasksSidebarProps {
   tasks: Demand[];
   onTaskClick?: (task: Demand) => void;
   onDemandUpdate?: (taskId: string, updates: Partial<Demand>) => void;
+  onDemandDelete?: (taskId: string) => void;
 }
 
 // Opções de horas: 0.5, 1, 1.5, 2, 2.5, ... até 24 horas
@@ -29,25 +29,25 @@ const formatHours = (hours: number): string => {
   return `${hours.toString().replace('.', ',')}h`;
 };
 
-// Função para determinar a cor baseada no rank de impacto
+// Função para determinar a cor baseada no rank de impacto (apenas primeira e segunda demanda)
 const getImpactColor = (rank: number | undefined, impactPercentage: number | undefined) => {
   if (!impactPercentage || impactPercentage === 0) {
     return 'bg-white'; // Sem impacto definido
   }
   
   if (rank === undefined) {
-    return 'bg-[#4a9e47]'; // Verde normal se rank não definido
+    return 'bg-white'; // Sem cor se rank não definido
   }
   
   if (rank === 0) {
-    // Maior impacto: verde mais intenso
+    // Primeira demanda: verde mais intenso
     return 'bg-[#1A8917]';
-  } else if (rank >= 1 && rank <= 3) {
-    // Top 3: verde mais escuro
+  } else if (rank === 1) {
+    // Segunda demanda: verde mais escuro
     return 'bg-[#2d5a2b]';
   } else {
-    // Resto: verde normal
-    return 'bg-[#4a9e47]';
+    // Resto: sem cor destacada
+    return 'bg-white';
   }
 };
 
@@ -55,6 +55,7 @@ export default function PendingTasksSidebar({
   tasks,
   onTaskClick,
   onDemandUpdate,
+  onDemandDelete,
 }: PendingTasksSidebarProps) {
   // Ordenar tarefas por impacto (maior primeiro, depois as sem impacto)
   const sortedTasks = [...tasks].sort((a, b) => {
@@ -94,22 +95,44 @@ export default function PendingTasksSidebar({
           pendingTasks.map((task) => {
             const impactRank = impactRankMap.get(task.id);
             const bgColor = getImpactColor(impactRank, task.impactPercentage);
-            const textColor = task.impactPercentage && task.impactPercentage > 0 
+            const textColor = (impactRank === 0 || impactRank === 1) && task.impactPercentage && task.impactPercentage > 0 
               ? 'text-white' 
               : 'text-[var(--text-primary)]';
             
             return (
             <Card
               key={task.id}
-              className={`p-3 ${bgColor} hover:opacity-90 transition-all ${textColor} border-[var(--border)]`}
+              className={`p-3 ${bgColor} hover:opacity-90 transition-all ${textColor} border-[var(--border)] relative`}
             >
               <CardContent className="p-0">
-                <p
-                  className={`text-sm ${textColor} mb-2 cursor-pointer`}
-                  onClick={() => onTaskClick?.(task)}
-                >
-                  {task.title}
-                </p>
+                {/* Título no canto superior esquerdo e porcentagem/checkbox no canto superior direito */}
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  {/* Título no canto superior esquerdo */}
+                  <p
+                    className={`text-sm ${textColor} cursor-pointer flex-1 min-w-0`}
+                    onClick={() => onTaskClick?.(task)}
+                  >
+                    {task.title}
+                  </p>
+                  {/* Porcentagem de impacto e checkbox lado a lado */}
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    {/* Porcentagem de impacto */}
+                    <span className={`text-xs font-medium ${textColor}`}>
+                      {task.impactPercentage !== undefined
+                        ? `${task.impactPercentage.toFixed(1)}%`
+                        : '-'}
+                    </span>
+                    {/* Checkbox */}
+                    <input
+                      type="checkbox"
+                      checked={false}
+                      onChange={() => onDemandDelete?.(task.id)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="w-4 h-4 cursor-pointer accent-[var(--text-primary)]"
+                      aria-label="Marcar como concluída"
+                    />
+                  </div>
+                </div>
                 <div className="flex gap-1.5">
                   {/* Select de Prioridade */}
                   <Select
@@ -121,7 +144,7 @@ export default function PendingTasksSidebar({
                     }}
                   >
                     <SelectTrigger
-                      className={`flex-1 h-8 text-xs ${
+                      className={`flex-1 h-6 text-xs ${
                         task.impactPercentage && task.impactPercentage > 0
                           ? 'bg-white/90 text-[var(--text-primary)]'
                           : 'bg-white text-[var(--text-primary)]'
@@ -149,7 +172,7 @@ export default function PendingTasksSidebar({
                     }}
                   >
                     <SelectTrigger
-                      className={`flex-1 h-8 text-xs ${
+                      className={`flex-1 h-6 text-xs ${
                         task.impactPercentage && task.impactPercentage > 0
                           ? 'bg-white/90 text-[var(--text-primary)]'
                           : 'bg-white text-[var(--text-primary)]'
@@ -158,7 +181,7 @@ export default function PendingTasksSidebar({
                     >
                       <SelectValue placeholder="Horas" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="max-h-[200px] overflow-y-auto">
                       {HOURS_OPTIONS.map((hours) => (
                         <SelectItem key={hours} value={hours.toString()}>
                           {formatHours(hours)}
@@ -167,28 +190,6 @@ export default function PendingTasksSidebar({
                       <SelectItem value="?">?</SelectItem>
                     </SelectContent>
                   </Select>
-
-                  {/* Input de Impacto */}
-                  <Input
-                    type="number"
-                    value={task.impactPercentage?.toString() || ''}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      onDemandUpdate?.(task.id, {
-                        impactPercentage: value ? parseFloat(value) : undefined,
-                      });
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                    placeholder="Impacto %"
-                    min="0"
-                    max="100"
-                    step="0.1"
-                    className={`flex-1 h-8 text-xs ${
-                      task.impactPercentage && task.impactPercentage > 0
-                        ? 'bg-white/90 text-[var(--text-primary)]'
-                        : 'bg-white text-[var(--text-primary)]'
-                    }`}
-                  />
                 </div>
               </CardContent>
             </Card>
