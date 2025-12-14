@@ -30,9 +30,19 @@ const formatHours = (hours: number): string => {
 };
 
 // Função para determinar a cor baseada no rank de impacto (apenas primeira e segunda demanda)
-const getImpactColor = (rank: number | undefined, impactPercentage: number | undefined) => {
+// Retorna 'bg-white' se todas as demandas tiverem o mesmo impacto
+const getImpactColor = (
+  rank: number | undefined, 
+  impactPercentage: number | undefined,
+  allSameImpact: boolean
+) => {
   if (!impactPercentage || impactPercentage === 0) {
     return 'bg-white'; // Sem impacto definido
+  }
+  
+  // Se todas têm o mesmo impacto, não aplicar cores
+  if (allSameImpact) {
+    return 'bg-white';
   }
   
   if (rank === undefined) {
@@ -69,6 +79,15 @@ export default function PendingTasksSidebar({
     return 0;
   });
   
+  // Verificar se todas as demandas têm o mesmo percentual de impacto
+  const tasksWithImpact = sortedTasks.filter(
+    (t) => t.impactPercentage !== undefined && t.impactPercentage > 0
+  );
+  const allSameImpact = tasksWithImpact.length > 0 && 
+    tasksWithImpact.every(
+      (t) => Math.abs((t.impactPercentage || 0) - (tasksWithImpact[0]?.impactPercentage || 0)) < 0.01
+    );
+  
   // Criar mapa de rank por ID
   const impactRankMap = new Map<string, number>();
   sortedTasks.forEach((task, index) => {
@@ -80,13 +99,13 @@ export default function PendingTasksSidebar({
   const pendingTasks = sortedTasks;
 
   return (
-    <div className="fixed left-0 top-16 bottom-0 w-80 bg-white border-r border-[var(--border)] overflow-y-auto">
-      <div className="p-4 border-b border-[var(--border)]">
+    <div className="fixed left-0 top-16 bottom-0 w-80 bg-white border-r border-[var(--border)] flex flex-col">
+      <div className="p-4 border-b border-[var(--border)] flex-shrink-0">
         <h2 className="text-sm font-semibold text-[var(--text-primary)] uppercase tracking-wide">
           Lista de Pendências
         </h2>
       </div>
-      <div className="p-4 space-y-2">
+      <div className="p-4 space-y-2 overflow-y-auto flex-1">
         {pendingTasks.length === 0 ? (
           <p className="text-sm text-[var(--text-secondary)] text-center py-8">
             Nenhuma pendência
@@ -94,8 +113,8 @@ export default function PendingTasksSidebar({
         ) : (
           pendingTasks.map((task) => {
             const impactRank = impactRankMap.get(task.id);
-            const bgColor = getImpactColor(impactRank, task.impactPercentage);
-            const textColor = (impactRank === 0 || impactRank === 1) && task.impactPercentage && task.impactPercentage > 0 
+            const bgColor = getImpactColor(impactRank, task.impactPercentage, allSameImpact);
+            const textColor = !allSameImpact && (impactRank === 0 || impactRank === 1) && task.impactPercentage && task.impactPercentage > 0 
               ? 'text-white' 
               : 'text-[var(--text-primary)]';
             
