@@ -1,11 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 export default function DailyTimeline() {
   // Inicializar como null para evitar erro de hidratação
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [hourHeight, setHourHeight] = useState(60);
+  const timelineRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Marcar como montado e definir o tempo inicial apenas no cliente
@@ -20,6 +22,24 @@ export default function DailyTimeline() {
     return () => clearInterval(interval);
   }, []);
 
+  // Calcular altura de cada hora baseado na altura disponível
+  useEffect(() => {
+    const updateHourHeight = () => {
+      if (timelineRef.current) {
+        const appHeaderHeight = 64; // Altura do header do app (h-16 = 64px)
+        const timelineHeaderHeight = 64; // Altura do header da timeline (p-4 + border-b)
+        const padding = 32; // Padding top e bottom (p-4 = 16px cada)
+        const availableHeight = window.innerHeight - appHeaderHeight - timelineHeaderHeight - padding;
+        const calculatedHeight = availableHeight / 24;
+        setHourHeight(Math.max(calculatedHeight, 20)); // Mínimo de 20px por hora
+      }
+    };
+
+    updateHourHeight();
+    window.addEventListener('resize', updateHourHeight);
+    return () => window.removeEventListener('resize', updateHourHeight);
+  }, []);
+
   const hours = Array.from({ length: 24 }, (_, i) => i);
   
   // Usar valores padrão até que o componente esteja montado no cliente
@@ -32,21 +52,21 @@ export default function DailyTimeline() {
   const currentPosition = (currentSeconds / totalSecondsInDay) * 100;
 
   return (
-    <div className="w-[332px] bg-white border-l border-[var(--border)] overflow-y-auto">
-      <div className="p-4 border-b border-[var(--border)]">
+    <div className="w-[332px] bg-white border-l border-[var(--border)] h-screen flex flex-col fixed right-0 top-16">
+      <div className="p-4 border-b border-[var(--border)] flex-shrink-0">
         <h2 className="text-sm font-semibold text-[var(--text-primary)] uppercase tracking-wide">
           Timeline do Dia
         </h2>
       </div>
-      <div className="relative p-4">
-        <div className="relative" style={{ minHeight: '1440px' }}>
+      <div className="relative p-4 flex-1 overflow-hidden" ref={timelineRef}>
+        <div className="relative h-full">
           {/* Hour blocks */}
-          <div className="space-y-0">
+          <div className="space-y-0 h-full flex flex-col">
             {hours.map((hour) => (
               <div
                 key={hour}
-                className="flex items-start border-b border-[var(--border)] last:border-b-0"
-                style={{ height: '60px' }}
+                className="flex items-start border-b border-[var(--border)] last:border-b-0 flex-shrink-0"
+                style={{ height: `${hourHeight}px` }}
               >
                 <div className="w-16 text-xs text-[var(--text-secondary)] font-mono flex-shrink-0 pt-1">
                   {String(hour).padStart(2, '0')}:00
