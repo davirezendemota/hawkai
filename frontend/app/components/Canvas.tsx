@@ -70,14 +70,14 @@ export default function Canvas({ demands, onDemandClick }: CanvasProps) {
       const impact = demand.impactPercentage || 0;
       const radius = Math.max((impact / maxImpact) * maxRadius, minRadius);
       
-      // Determinar cor baseada no rank
+      // Determinar cor baseada no rank (apenas primeira e segunda demanda)
       let color: string;
       if (index === 0) {
-        color = '#1A8917'; // Maior impacto: verde mais intenso
-      } else if (index >= 1 && index <= 3) {
-        color = '#2d5a2b'; // Top 3: verde mais escuro
+        color = '#1A8917'; // Primeira demanda: verde mais intenso
+      } else if (index === 1) {
+        color = '#2d5a2b'; // Segunda demanda: verde mais escuro
       } else {
-        color = '#4a9e47'; // Resto: verde normal
+        color = '#e5e7eb'; // Resto: cinza (sem cor destacada)
       }
 
       return {
@@ -104,17 +104,18 @@ export default function Canvas({ demands, onDemandClick }: CanvasProps) {
     const width = dimensions.width;
     const height = dimensions.height;
 
-    // Criar simulação de força
+    // Criar simulação de força para fazer as bolhas "grudarem"
+    // Reduzindo repulsão e espaçamento mínimo para que fiquem próximas
     const simulation = d3
       .forceSimulation<BubbleNode>(bubbleData)
-      .force('x', d3.forceX(width / 2).strength(0.05))
-      .force('y', d3.forceY(height / 2).strength(0.05))
-      .force('charge', d3.forceManyBody().strength(-100))
-      .force('collision', d3.forceCollide<BubbleNode>().radius((d) => d.radius + 5))
+      .force('x', d3.forceX(width / 2).strength(0.15))
+      .force('y', d3.forceY(height / 2).strength(0.15))
+      .force('charge', d3.forceManyBody().strength(-15)) // Repulsão muito baixa
+      .force('collision', d3.forceCollide<BubbleNode>().radius((d) => d.radius + 0.5)) // Espaçamento mínimo muito pequeno (quase grudando)
       .stop();
 
-    // Executar simulação
-    for (let i = 0; i < 100; ++i) simulation.tick();
+    // Executar simulação com mais iterações para melhor convergência
+    for (let i = 0; i < 300; ++i) simulation.tick();
 
     // Criar grupos para cada bolha
     const bubbles = svg
@@ -136,7 +137,7 @@ export default function Canvas({ demands, onDemandClick }: CanvasProps) {
       .append('circle')
       .attr('r', (d) => d.radius)
       .attr('fill', (d) => d.color)
-      .attr('stroke', 'white')
+      .attr('stroke', (d) => (d.impactRank === 0 || d.impactRank === 1) ? 'white' : '#d1d5db')
       .attr('stroke-width', 2)
       .style('opacity', (d) => (d.impactRank === 0 ? 0.8 : 0.6))
       .on('mouseenter', function() {
@@ -151,7 +152,7 @@ export default function Canvas({ demands, onDemandClick }: CanvasProps) {
       .append('text')
       .attr('text-anchor', 'middle')
       .attr('dominant-baseline', 'middle')
-      .attr('fill', 'white')
+      .attr('fill', (d) => (d.impactRank === 0 || d.impactRank === 1) ? 'white' : '#374151')
       .attr('font-size', (d) => (d.impactRank === 0 ? '14' : '10'))
       .attr('font-weight', (d) => (d.impactRank === 0 ? 'bold' : 'normal'))
       .style('pointer-events', 'none')
@@ -178,7 +179,7 @@ export default function Canvas({ demands, onDemandClick }: CanvasProps) {
   }, [bubbleData, dimensions, onDemandClick]);
 
   return (
-    <Card className="h-[300px] mb-4 flex flex-col max-w-2xl">
+    <Card className="h-[300px] mb-4 flex flex-col w-full">
       <CardHeader className="pb-4">
         <CardTitle className="text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wide">
           Canvas
