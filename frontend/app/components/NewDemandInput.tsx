@@ -44,8 +44,8 @@ export default function NewDemandInput({ onDemandCreate }: NewDemandInputProps) 
   };
 
   return (
-    <div className="mb-4">
-      <form onSubmit={handleSubmit} className="space-y-3">
+    <div className="mb-6 flex justify-center">
+      <form onSubmit={handleSubmit} className="w-full max-w-2xl space-y-3">
         <div className="relative">
           {/* Input de título */}
           <Input
