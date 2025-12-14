@@ -64,7 +64,7 @@ export default function Dashboard() {
       />
 
       {/* Center Column - Main Workspace */}
-      <main className="flex-1 ml-80 mr-64 overflow-y-auto">
+      <main className="flex-1 ml-80 overflow-y-auto">
         <div className="p-6 h-full flex flex-col">
           {/* Demand Input */}
           <NewDemandInput onDemandCreate={handleDemandCreate} />

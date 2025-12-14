@@ -32,7 +32,7 @@ export default function DailyTimeline() {
   const currentPosition = (currentSeconds / totalSecondsInDay) * 100;
 
   return (
-    <aside className="fixed right-0 top-16 bottom-0 w-64 bg-white border-l border-[var(--border)] overflow-y-auto">
+    <div className="w-[332px] bg-white border-l border-[var(--border)] overflow-y-auto">
       <div className="p-4 border-b border-[var(--border)]">
         <h2 className="text-sm font-semibold text-[var(--text-primary)] uppercase tracking-wide">
           Timeline do Dia
@@ -79,6 +79,6 @@ export default function DailyTimeline() {
           )}
         </div>
       </div>
-    </aside>
+    </div>
   );
 }
