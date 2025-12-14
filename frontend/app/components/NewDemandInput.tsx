@@ -4,13 +4,7 @@ import { useState, FormEvent } from 'react';
 import { DemandPriority } from '../types/demand';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Plus } from 'lucide-react';
 
 interface NewDemandInputProps {
   onDemandCreate: (data: {
@@ -20,17 +14,6 @@ interface NewDemandInputProps {
   }) => void;
 }
 
-// Opções de horas: 0.5, 1, 1.5, 2, 2.5, ... até 24 horas
-const MAX_HOURS = 24;
-const HOURS_OPTIONS: number[] = [];
-for (let i = 0.5; i <= MAX_HOURS; i += 0.5) {
-  HOURS_OPTIONS.push(i);
-}
-
-// Função para formatar horas
-const formatHours = (hours: number): string => {
-  return `${hours.toString().replace('.', ',')}h`;
-};
 
 export default function NewDemandInput({ onDemandCreate }: NewDemandInputProps) {
   const [title, setTitle] = useState('');
@@ -63,54 +46,24 @@ export default function NewDemandInput({ onDemandCreate }: NewDemandInputProps) 
   return (
     <div className="mb-4">
       <form onSubmit={handleSubmit} className="space-y-3">
-        <div className="flex gap-3">
+        <div className="relative">
           {/* Input de título */}
           <Input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Digite uma nova demanda"
-            className="flex-1"
+            className="flex-1 pr-12 h-12 text-base"
             required
           />
 
-          {/* Select de prioridade */}
-          <Select
-            value={priority}
-            onValueChange={(value) => setPriority(value as DemandPriority)}
+          {/* Botão de submit dentro do input */}
+          <Button 
+            type="submit"
+            className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
+            size="icon"
           >
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="Prioridade" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="low">Baixa</SelectItem>
-              <SelectItem value="medium">Média</SelectItem>
-              <SelectItem value="high">Alta</SelectItem>
-              <SelectItem value="urgent">Urgente</SelectItem>
-            </SelectContent>
-          </Select>
-
-          {/* Select de horas */}
-          <Select
-            value={storyPoints || undefined}
-            onValueChange={(value) => setStoryPoints(value)}
-          >
-            <SelectTrigger className="w-[140px]" title="Horas estimadas">
-              <SelectValue placeholder="Horas" />
-            </SelectTrigger>
-            <SelectContent>
-              {HOURS_OPTIONS.map((hours) => (
-                <SelectItem key={hours} value={hours.toString()}>
-                  {formatHours(hours)}
-                </SelectItem>
-              ))}
-              <SelectItem value="?">? (incerto)</SelectItem>
-            </SelectContent>
-          </Select>
-
-          {/* Botão de submit */}
-          <Button type="submit">
-            Criar
+            <Plus className="h-5 w-5" />
           </Button>
         </div>
       </form>
