@@ -14,10 +14,10 @@ export default function Hawk({ messages = [] }: HawkProps) {
           Hawk
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex-1 flex gap-4 overflow-hidden items-center">
-        {/* Foto do falcão à esquerda */}
+      <CardContent className="flex-1 flex flex-col overflow-hidden items-center justify-between pb-4">
+        {/* Foto do falcão centralizada */}
         <div className="flex-shrink-0">
-          <div className="w-20 h-20 rounded-full overflow-hidden">
+          <div className="w-32 h-32 rounded-full overflow-hidden">
             <img
               src="/hawk.png"
               alt="Hawk - Inteligência Artificial"
@@ -26,24 +26,21 @@ export default function Hawk({ messages = [] }: HawkProps) {
           </div>
         </div>
 
-        {/* Balão de mensagem à direita */}
-        <div className="flex-1 flex flex-col min-h-0">
-          <div className="relative flex-1 bg-white rounded-lg p-3 min-h-[120px] overflow-y-auto">
-            {/* Triângulo do balão apontando para a foto */}
-            <div className="absolute left-0 top-6 -ml-2 w-0 h-0 border-t-8 border-t-transparent border-r-8 border-r-white border-b-8 border-b-transparent"></div>
-            
+        {/* Balão de mensagem abaixo do hawk */}
+        <div className="flex-shrink-0 w-full mb-6">
+          <div className="relative bg-white rounded-lg p-3 overflow-y-auto">
             {messages.length === 0 ? (
-              <div className="h-full flex items-center justify-center pl-2">
-                <p className="text-sm text-[var(--text-secondary)] text-center">
+              <div className="h-full flex items-center justify-center">
+                <p className="text-lg text-[var(--text-secondary)] text-center">
                   Hawk está observando suas pendências...
                 </p>
               </div>
             ) : (
-              <div className="space-y-2 pl-2">
+              <div className="space-y-2">
                 {messages.map((message, index) => (
                   <div
                     key={index}
-                    className="text-sm text-[var(--text-primary)] leading-relaxed"
+                    className="text-lg text-[var(--text-primary)] leading-relaxed"
                   >
                     {message}
                   </div>
